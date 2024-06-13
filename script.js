@@ -1,5 +1,3 @@
-// script.js
-
 // Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyB3mqrM0WDjXR52Zgk1zobtL9bZ60G2f4o",
@@ -11,7 +9,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // Initialize the map
@@ -22,7 +20,7 @@ L.tileLayer(
   "https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=YOUR_API_KEY",
   {
     attribution: "&copy; OpenStreetMap contributors & Thunderforest",
-    apikey: "YOUR_API_KEY",
+    apikey: "4a98d80f4fbc47d7a4582e9f9dc26709", // Replace with your actual API key
     updateWhenIdle: true,
     updateWhenZooming: false,
     keepBuffer: 2,
@@ -51,9 +49,9 @@ function fetchAndPlotConcerts() {
 
         // Create popup content
         var popupContent = `
-                <strong>Band Name:</strong> ${bandName || "N/A"}<br>
-                <strong>Details:</strong> ${concertDetails || "N/A"}<br>
-            `;
+                    <strong>Band Name:</strong> ${bandName || "N/A"}<br>
+                    <strong>Details:</strong> ${concertDetails || "N/A"}<br>
+                `;
 
         // Add marker to the map
         L.marker([lat, lon], { icon: customIcon })

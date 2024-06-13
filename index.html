@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,26 +7,212 @@
     <title>Concert Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            margin: 20px 0;
+        }
+
         #map {
-            height: 600px;
+            height: 80%;
             width: 100%;
-            margin-top: 20px;
+            flex-grow: 1;
+        }
+
+        .form-container {
+            position: absolute;
+            top: 500px;
+            left: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            width: 300px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+        }
+
+        .form-container button.close-btn {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .form-container button.close-btn:hover {
+            color: #333;
+        }
+
+        .form-container label,
+        .form-container input,
+        .form-container button.submit-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .form-container button.submit-btn {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-container button.submit-btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 
 <body>
     <h1>Concerts Near You</h1>
+
+    <div id="formContainer" class="form-container">
+        <button class="close-btn" onclick="closeForm()">✖</button>
+        <h2>Add New Concert</h2>
+        <form id="concertForm">
+            <label for="band_name">Band Name:</label>
+            <input type="text" id="band_name" name="band_name" required>
+
+            <label for="lat">Latitude:</label>
+            <input type="number" step="any" id="lat" name="lat" required>
+
+            <label for="lon">Longitude:</label>
+            <input type="number" step="any" id="lon" name="lon" required>
+
+            <label for="details">Details:</label>
+            <input type="text" id="details" name="details">
+
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+    </div>
+
     <div id="map"></div>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <script src="script.js"></script>
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3mqrM0WDjXR52Zgk1zobtL9bZ60G2f4o",
+            authDomain: "morlum-daily-show-data.firebaseapp.com",
+            projectId: "morlum-daily-show-data",
+            storageBucket: "morlum-daily-show-data.appspot.com",
+            messagingSenderId: "323716989684",
+            appId: "1:323716989684:web:c9d9c108d796ca0afa94a1"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Get a reference to the Firestore database
+        const db = firebase.firestore();
+
+        // Initialize the map
+        var map = L.map("map").setView([16.1, 103.7], 8);
+
+        // Add base map layer
+        L.tileLayer(
+            "https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=4a98d80f4fbc47d7a4582e9f9dc26709",
+            {
+                attribution: "&copy; OpenStreetMap contributors & Thunderforest",
+                updateWhenIdle: true,
+                updateWhenZooming: false,
+                keepBuffer: 2,
+            }
+        ).addTo(map);
+
+        // Custom marker icon for concerts
+        var customIcon = L.icon({
+            iconUrl: "Asset 55map-icon.svg", // Replace with the path to your custom icon
+            iconSize: [38, 38],
+            iconAnchor: [22, 38],
+            popupAnchor: [-3, -38],
+        });
+
+        // Function to fetch data from Firebase and plot on the map
+        async function fetchAndPlotConcerts() {
+            const querySnapshot = await db.collection("concerts").get();
+            querySnapshot.forEach((doc) => {
+                const concert = doc.data();
+                const lat = concert.lat;
+                const lon = concert.lon;
+                const bandName = concert.band_name;
+                const concertDetails = concert.details;
+
+                // Create popup content
+                var popupContent = `
+                    <strong>Band Name:</strong> ${bandName || "N/A"}<br>
+                    <strong>Details:</strong> ${concertDetails || "N/A"}<br>
+                `;
+
+                // Add marker to the map
+                L.marker([lat, lon], { icon: customIcon })
+                    .addTo(map)
+                    .bindPopup(popupContent);
+            });
+        }
+
+        // Fetch and plot concerts on map load
+        fetchAndPlotConcerts();
+
+        // Form submission handler
+        document.getElementById("concertForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Capture form data (directly access values)
+            const bandName = document.getElementById("band_name").value;
+            const lat = parseFloat(document.getElementById("lat").value);
+            const lon = parseFloat(document.getElementById("lon").value);
+            const details = document.getElementById("details").value;
+
+            // Add data to Firestore
+            db.collection("concerts").add({
+                band_name: bandName,
+                lat: lat,
+                lon: lon,
+                details: details
+            })
+                .then((docRef) => {
+                    console.log("Document written with ID: ", docRef.id);
+                    alert("Concert data added successfully!");
+                    event.target.reset(); // Clear the form
+                    fetchAndPlotConcerts(); // Refresh map data
+                })
+                .catch((error) => {
+                    console.error("Error adding document: ", error);
+                });
+        });
+
+        // Function to close the form
+        function closeForm() {
+            document.getElementById("formContainer").style.display = "none";
+        }
+    </script>
 </body>
 
 </html>

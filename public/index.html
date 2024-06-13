@@ -1,0 +1,51 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Concert</title>
+    <style>
+        form {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        label,
+        input,
+        button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Add New Concert</h1>
+    <form id="concertForm">
+        <label for="band_name">Band Name:</label>
+        <input type="text" id="band_name" name="band_name" required>
+
+        <label for="lat">Latitude:</label>
+        <input type="number" step="any" id="lat" name="lat" required>
+
+        <label for="lon">Longitude:</label>
+        <input type="number" step="any" id="lon" name="lon" required>
+
+        <label for="details">Details:</label>
+        <input type="text" id="details" name="details">
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
